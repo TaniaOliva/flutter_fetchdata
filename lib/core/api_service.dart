@@ -2,37 +2,31 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class ApiService {
-  static const String baseUrl = "https://www.thecocktaildb.com/api/json/v1/1";
+  static const String baseUrl = 'https://www.thecocktaildb.com/api/json/v1/1';
 
-  static Future<List<Map<String, dynamic>>> getCocktails() async {
-    final response =
-        await http.get(Uri.parse('$baseUrl/filter.php?c=Cocktail'));
-    final data = json.decode(response.body);
-    return (data['drinks'] as List)
-        .map((drink) => {
-              'id': drink['idDrink'],
-              'name': drink['strDrink'],
-              'image': drink['strDrinkThumb'],
-            })
-        .toList();
+  // Obtener todas las bebidas por categoría
+  Future<List<dynamic>> fetchDrinksByCategory(String category) async {
+    final url = Uri.parse('$baseUrl/filter.php?c=$category');
+    final response = await http.get(url);
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      return data['drinks'] ?? [];
+    } else {
+      throw Exception('Failed to load drinks');
+    }
   }
 
-  static Future<List<Map<String, dynamic>>> searchCocktailByName(
-      String query) async {
-    final response = await http.get(Uri.parse('$baseUrl/search.php?s=$query'));
-    final data = json.decode(response.body);
-    return (data['drinks'] as List)
-        .map((drink) => {
-              'id': drink['idDrink'],
-              'name': drink['strDrink'],
-              'image': drink['strDrinkThumb'],
-            })
-        .toList();
-  }
+  // Obtener detalles de una bebida por ID
+  Future<Map<String, dynamic>> fetchDrinkDetails(String id) async {
+    final url = Uri.parse('$baseUrl/lookup.php?i=$id');
+    final response = await http.get(url);
 
-  static Future<Map<String, dynamic>> getDrinkDetails(String id) async {
-    final response = await http.get(Uri.parse('$baseUrl/lookup.php?i=$id'));
-    final data = json.decode(response.body);
-    return (data['drinks'] as List).first;
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      return data['drinks'][0] ?? {};
+    } else {
+      throw Exception('Failed to load drink details');
+    }
   }
 }

@@ -1,15 +1,20 @@
-class Drink {
-  final String id;
-  final String name;
-  final String thumbnail;
+// lib/models/drink.dart
 
-  Drink({required this.id, required this.name, required this.thumbnail});
+class Drink {
+  final String idDrink;
+  final String strDrink;
+  final String strDrinkThumb;
+
+  Drink(
+      {required this.idDrink,
+      required this.strDrink,
+      required this.strDrinkThumb});
 
   factory Drink.fromJson(Map<String, dynamic> json) {
     return Drink(
-      id: json['idDrink'],
-      name: json['strDrink'],
-      thumbnail: json['strDrinkThumb'],
+      idDrink: json['idDrink'],
+      strDrink: json['strDrink'],
+      strDrinkThumb: json['strDrinkThumb'],
     );
   }
 }

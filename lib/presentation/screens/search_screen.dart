@@ -1,72 +1,74 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_fetchdata/core/api_service.dart';
 import 'package:go_router/go_router.dart';
 
 class SearchScreen extends StatefulWidget {
-  const SearchScreen({Key? key}) : super(key: key);
-
   @override
   _SearchScreenState createState() => _SearchScreenState();
 }
 
 class _SearchScreenState extends State<SearchScreen> {
   String query = '';
-  Future<List<Map<String, String>>>? searchResults;
+  List<String> searchResults = []; // Simulación de resultados
 
-  void _search(String query) {
+  void performSearch(String query) {
+    // Lógica de búsqueda simulada
+    List<String> allItems = ['Margarita', 'Mojito', 'Martini', 'Daiquiri'];
     setState(() {
-      this.query = query;
-      searchResults = ApiService.searchCocktailByName(query);
+      searchResults = allItems
+          .where((item) => item.toLowerCase().contains(query.toLowerCase()))
+          .toList();
     });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Search Drinks")),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: TextField(
-              onSubmitted: _search,
-              decoration: InputDecoration(
-                labelText: "Enter cocktail name",
+      appBar: AppBar(
+        title: const Text('Search Drinks'),
+        centerTitle: true,
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            TextField(
+              decoration: const InputDecoration(
+                labelText: 'Search for a drink',
                 border: OutlineInputBorder(),
+                prefixIcon: Icon(Icons.search),
               ),
+              onChanged: (value) {
+                setState(() {
+                  query = value;
+                });
+                performSearch(query);
+              },
             ),
-          ),
-          Expanded(
-            child: searchResults == null
-                ? const Center(child: Text("Search for a drink"))
-                : FutureBuilder<List<Map<String, String>>>(
-                    future: searchResults,
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return const Center(child: CircularProgressIndicator());
-                      }
-                      if (snapshot.hasError) {
-                        return const Center(child: Text("Search failed"));
-                      }
-                      final drinks = snapshot.data ?? [];
-                      return ListView.builder(
-                        itemCount: drinks.length,
-                        itemBuilder: (context, index) {
-                          final drink = drinks[index];
-                          return ListTile(
-                            leading:
-                                Image.network(drink['image'] ?? '', width: 50),
-                            title: Text(drink['name'] ?? 'No Name'),
-                            onTap: () {
-                              GoRouter.of(context).go('/drink/${drink['id']}');
-                            },
-                          );
-                        },
-                      );
-                    },
-                  ),
-          ),
-        ],
+            const SizedBox(height: 20),
+            Expanded(
+              child: searchResults.isEmpty
+                  ? const Center(
+                      child: Text('No results found.'),
+                    )
+                  : ListView.builder(
+                      itemCount: searchResults.length,
+                      itemBuilder: (context, index) {
+                        return ListTile(
+                          title: Text(searchResults[index]),
+                          onTap: () {
+                            // Navegación al detalle de una bebida
+                            GoRouter.of(context).go('/detail', extra: {
+                              'drinkName': searchResults[index],
+                              'id':
+                                  '123' // ID ficticio, reemplazar con datos reales
+                            });
+                          },
+                        );
+                      },
+                    ),
+            ),
+          ],
+        ),
       ),
     );
   }
